@@ -1,19 +1,10 @@
 import 'dotenv/config';
 import express from 'express';
-import {
-  InteractionType,
-  InteractionResponseType,
-  InteractionResponseFlags,
-  MessageComponentTypes,
-  ButtonStyleTypes,
-} from 'discord-interactions';
-import {VerifyDiscordRequest, getRandomEmoji, DiscordRequest, getAppId, getGuildIds, getPublicKey} from './utils.js';
-import {
-  LICK_COMMAND,
-  HasGuildCommands, SUDO_LICK_COMMAND,
-} from './commands.js';
-import {chatWithInstructions} from "./services/openai.js";
-import {pretendToBe} from "./services/pretend.js";
+import {InteractionResponseType, InteractionType,} from 'discord-interactions';
+import {getAppId, getGuildIds, getPublicKey, VerifyDiscordRequest} from './utils.js';
+import {HasGuildCommands, LICK_COMMAND, SUDO_LICK_COMMAND,} from './commands.js';
+import {botLick, sudoBotLick} from "./services/noTongueBot.js";
+import {getPretendToBeInstructions} from "./services/pretend.js";
 
 // Create an express app
 const app = express();
@@ -25,12 +16,16 @@ app.use(express.json({ verify: VerifyDiscordRequest(await getPublicKey()) }));
 // Store for in-progress games. In production, you'd want to use a DB
 const activeGames = {};
 
+function getDiscordConversationId(channel_id, guild_id) {
+    return "DISCORD:channel_id:" + channel_id + ":guild_id:" + guild_id;
+}
+
 /**
  * Interactions endpoint URL where Discord will send HTTP requests
  */
 app.post('/interactions', async function (req, res) {
   // Interaction type and data
-  const { type, id, data } = req.body;
+  const { type, id, data, guild_id, channel_id } = req.body;
 
   /**
    * Handle verification requests
@@ -48,8 +43,8 @@ app.post('/interactions', async function (req, res) {
 
     if (name === LICK_COMMAND['name']) {
       let prompt = options[0].value;
-      let response = await pretendToBe("a tongue", prompt);
-      let content = `\"${prompt}\"
+        let response = await botLick(getDiscordConversationId(channel_id, guild_id), prompt);
+        let content = `\"${prompt}\"
 
 ${response}`;
       return res.send({
@@ -63,7 +58,7 @@ ${response}`;
     if (name === SUDO_LICK_COMMAND['name']) {
         let instructions = options[0].value;
         let prompt = options[1].value;
-        let response = await chatWithInstructions(instructions, prompt);
+        let response = await sudoBotLick(getDiscordConversationId(channel_id, guild_id), instructions, prompt);
         let content = `\"${instructions}\"
 
 \"${prompt}\"
