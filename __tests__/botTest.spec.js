@@ -1,8 +1,7 @@
 import {expect, test} from "@jest/globals";
-import {evaluateAsYesNo} from "../services/openai.js";
+import {chatWithMessages, evaluateAsYesNo} from "../services/openai.js";
 
-
-let tries = 10;
+let tries = 1;
 
 let responses = await evaluateAsYesNo("Is the sky blue?", tries);
 

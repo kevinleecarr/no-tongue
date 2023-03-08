@@ -1,6 +1,12 @@
 import {Configuration, OpenAIApi} from "openai";
 import {getOpenAiKey} from "../utils.js";
 
+export function getSystemMessage(instructions) {
+    return [
+        {role: "system", content: instructions}
+    ];
+}
+
 export function getMessagesForInstructionsAndPrompt(instructions, prompt) {
     return [
         {role: "system", content: instructions},
@@ -11,7 +17,7 @@ export function getMessagesForInstructionsAndPrompt(instructions, prompt) {
 const MAX_MESSAGES_PER_CONVERSATION = 100;
 
 function truncate(messages) {
-    return messages.slice(0, 1).concat(messages.slice(1).slice(0 - MAX_MESSAGES_PER_CONVERSATION));
+    return messages.slice(0, 1).concat(messages.slice(1).slice(0 - MAX_MESSAGES_PER_CONVERSATION - 1));
 }
 
 export function appendUserMessage(messages, prompt) {
@@ -24,18 +30,18 @@ export function appendBotMessage(messages, prompt) {
     return truncate(messages);
 }
 
-export async function chatWithMessages(messages, nOptions) {
+export async function chatWithMessages(messages, nOptions = 1) {
     let openai = new OpenAIApi(new Configuration({
         apiKey: await getOpenAiKey()
     }));
 
-    console.log(messages);
     try {
         const completion = await openai.createChatCompletion({
             model: "gpt-3.5-turbo",
             messages: messages,
             n: nOptions,
         });
+
         if (nOptions === 1) {
             return completion.data.choices[0].message.content;
         } else {
@@ -50,11 +56,6 @@ export async function chatWithMessages(messages, nOptions) {
         }
         return '...';
     }
-}
-
-export async function chatWithInstructions(instructions, prompt, nOptions = 1) {
-    let messages = getMessagesForInstructionsAndPrompt(instructions, prompt);
-    return await chatWithMessages(messages, nOptions);
 }
 
 export async function evaluateAsYesNo(question, nTimes = 1) {

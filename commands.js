@@ -56,21 +56,6 @@ export const LICK_COMMAND = {
   type: 1,
 };
 
-export const NARRATE_COMMAND = {
-  name: 'narrate',
-  description: 'Prompt the bot respond',
-  options: [
-    {
-      name: 'prompt',
-      description: 'The prompt to send to the bot',
-      type: 3,
-      required: true,
-    },
-  ],
-  type: 1,
-};
-
-
 export const SUDO_LICK_COMMAND = {
   name: 'sudo_lick',
   description: 'Prompt the bot respond with instructions',
@@ -90,3 +75,12 @@ export const SUDO_LICK_COMMAND = {
   ],
   type: 1,
 };
+
+export const RESET_LICK = {
+  name: 'reset_lick',
+  description: 'Reset the bot',
+  options: [],
+  type: 1,
+};
+
+export const COMMANDS = [LICK_COMMAND, SUDO_LICK_COMMAND, RESET_LICK];

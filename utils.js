@@ -34,6 +34,10 @@ export async function getOpenAiKey() {
   return getSecret('OPEN_API_KEY');
 }
 
+export function argsFromOptions(command, interaction) {
+  return command.options.reduce((acc, option) => ({ ...acc, [option.name]: interaction.options.getString(option.name) }), {});
+}
+
 export function VerifyDiscordRequest(clientKey) {
   return function (req, res, buf, encoding) {
     const signature = req.get('X-Signature-Ed25519');
